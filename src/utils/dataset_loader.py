@@ -1,4 +1,4 @@
-from __future__ import print_function , division
+from __future__ import print_function, division
 from tqdm import tqdm
 from skimage import io
 from skimage.transform import resize
@@ -13,7 +13,7 @@ def loader(root_dir):
     Args:
         root_dir(str): Root Directory of dataset folder
     Returns:
-        (tuple): Image_array(np.array) , Label_array(np.array)
+        (tuple): Image_array(np.array), Label_array(np.array)
     """
     print(f"Loading dataset from {root_dir}")
     root_dir = 'EarVN1.0/EarVN1.0 dataset/Images'
@@ -33,6 +33,10 @@ def loader(root_dir):
             print(f"Directory {parent_path} not found.")
             continue
         for child_path in child_path_list:
+            # Skip files with the .DS_Store extension
+            if child_path.endswith('.DS_Store'):
+                continue
+                
             image_path = os.path.join(parent_path, child_path)
             image = io.imread(image_path)
             rescaled_image = resize(image, (minimum_width, minimum_height))
@@ -53,3 +57,5 @@ def loader(root_dir):
     print(f'Labels Dimension: {label_array.shape}')
     return (image_array, label_array)
 
+# Example usage:
+# dataset, labels = loader(cfg.dataset_path)

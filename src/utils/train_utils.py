@@ -2,6 +2,8 @@ import torch
 from tqdm import tqdm
 import time
 
+
+#fa il trainig e valutare le prestazioni su un set di dati di convalida per un numero specificato di epoche#
 def train_model(trainLoader, validationLoader, model ,optimizer, scheduler ,criterion,binary_criterion, NUM_EPOCHS):
     """
     Args:
