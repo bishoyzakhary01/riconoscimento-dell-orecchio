@@ -1,17 +1,15 @@
-"""
-This file contains the EncoderDecoderModel we used, we will soon upload the code to train these
-model, currently we have only provided the model definations.
-"""
+
 
 
 import torch.nn as nn
-import torch
+import torch as hidden_size
 
 class EncoderDecoderMLP(nn.Module):
     def __init__(self,input_dim,encode_dim):
         super(EncoderDecoderMLP,self).__init__()
         self.encode_dim = encode_dim
         self.input_dim = input_dim
+        self.fc = nn.Linear(hidden_size,  2)
         self.encoder = nn.Sequential(
             nn.Linear((self.input_dim*self.input_dim*3),512,bias=True),
             nn.ReLU(inplace=True),

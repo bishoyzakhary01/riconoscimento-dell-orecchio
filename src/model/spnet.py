@@ -27,7 +27,6 @@ class Spnet(nn.Module):
         self.NUM_CLASSES = NUM_CLASSES
         
         model = models.resnet152(pretrained=True)
-        
         self.feature_extractor = nn.Sequential(*(list(model.children())[:-1]))
         self.linear1 = nn.Linear(2048+512,2048)
         self.bn1 = nn.BatchNorm1d(num_features=2048)
@@ -62,11 +61,12 @@ class Spnet(nn.Module):
         x = self.relu(self.bn2(x))
         #class_l = self.linear3(x)
         gender_l = self.sigmoid(self.binary_layer(x))
+        ethnicity_l= self.sigmoid(self.binary_layer(x))
         if labels is not None:
-            class_l = self.loss_lmcl(x,labels)
+            class_l = self.loss_lmcl(x,labels-1)
         else:
             class_l = self.linear3(x)
-        return class_l , gender_l
+        return class_l , gender_l ,ethnicity_l
 
     def spatial_encoder(self):
         

@@ -1,98 +1,1 @@
-import torch
-from tqdm import tqdm
-import time
-
-
-#fa il trainig e valutare le prestazioni su un set di dati di convalida per un numero specificato di epoche#
-def train_model(trainLoader, validationLoader, model ,optimizer, scheduler ,criterion,binary_criterion, NUM_EPOCHS):
-    """
-    Args:
-        model(nn.Module): 
-        optimizer(nn.optim):
-        scheduler(nn.optim):
-        criterion(nn.CrossEntropy):
-        binary_criterion(nn.BCELoss):
-        NUM_EPOCSH(int):
-    Returns:
-        model(nn.Module):
-    """
-    
-    since = time.time()
-    best_acc = 0.0
-    for epoch in tqdm(range(NUM_EPOCHS)):
-        print(f'EPOCH{epoch}/{NUM_EPOCHS-1}')
-        for phase in ['train','val']:
-            if phase == 'train':
-                model.train()
-                running_loss = 0.0
-                running_correct = 0
-                class_correct = 0.0
-                binary_correct = 0.0
-                total = 0
-                for images , labels in tqdm((iter(trainLoader))):
-                    # images = images.to(device)
-                    # labels = labels.to(device)
-                    optimizer.zero_grad()
-                    
-                    #Calculate loss   
-                    class_labels = torch.squeeze(labels[:,:1])
-                    binary_labels = torch.squeeze(labels[:,1:]).float()
-                    
-                    #Forward Pass
-                    class_logits , binary_logits = model(images,class_labels)
-
-                    class_loss = criterion(class_logits,class_labels)
-                    
-                    binary_loss = binary_criterion(torch.squeeze(binary_logits),binary_labels)                     
-                    _ , class_preds = torch.max(class_logits ,1)
-                    binary_preds = torch.round(binary_logits)
-                    
-                    # Add loss of both softmax loss and binary loss
-                    loss = class_loss + binary_loss
-                    #Calculate grads
-                    loss.backward()
-                    optimizer.step()
-                    if epoch > 30:
-                        scheduler.step()
-                    running_loss += loss.item() 
-                    total += labels.size(0)
-                    class_correct += (class_preds == class_labels).sum().item()
-                    binary_correct += (torch.squeeze(binary_preds) == binary_labels).sum().item()
-                    
-                scheduler.step()
-                print(f'Train Epoch:{epoch} Loss:{running_loss / len(trainLoader)}  Accuracy:{100 * class_correct / total} Gender Accuracy:{100 * binary_correct / total}')
-
-            else:
-                # top3_acc.reset()            
-                model.eval()
-                running_loss = 0.0
-                running_correct = 0
-                class_correct = 0.0
-                binary_correct = 0.0
-                total = 0
-                for images , labels in tqdm(iter(validationLoader)):
-                    # images = images.to(device)
-                    # labels = labels.to(device)
-                    
-                    class_labels = torch.squeeze(labels[:,:1])
-                    binary_labels = torch.squeeze(labels[:,1:]).float()
-                    class_logits , binary_logits= model(images,class_labels)
-
-                    class_loss = criterion(class_logits,class_labels)
-                    binary_loss = binary_criterion(torch.squeeze(binary_logits),binary_labels)
-                    loss = class_loss + binary_loss
-                    _ , class_preds = torch.max(class_logits ,1)
-                    binary_preds = torch.round(binary_logits)
-                    running_loss += loss.item()
-                    total += labels.size(0)
-                    # top3_acc.update(class_logits, class_labels)
-                    
-                    class_correct += (class_preds == class_labels).sum().item()
-                    binary_correct += (torch.squeeze(binary_preds) == binary_labels).sum().item()
-                print(f'Eval Epoch:{epoch} Loss:{running_loss / len(validationLoader)} Accuracy:{100 * class_correct / total } Gender Accuracy:{100 * binary_correct / total}')
-                # print(f'{top3_acc.name}: {top3_acc.get()*100} ')
-             
-    time_elapsed = time.time() - since
-    print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-    return model
-
+import torchfrom tqdm import tqdmimport timeimport copyimport numpy as npimport pandas as pdimport matplotlib.pyplot as pltfrom sklearn.model_selection import train_test_splitfrom sklearn.preprocessing import LabelEncoderimport torchfrom torch.nn.functional import padimport torchfrom torchvision.transforms import Resizefrom PIL import Imageimport torchvisionimport torch.nn as nnimport torch.optim as optimimport torchvision.transforms as transformsfrom torch.utils.data import Dataset, DataLoader, ConcatDatasetfrom torchvision import transformsdef train_model(model, dataloaders, criterion, optimizer, NUM_EPOCHS, is_inception=False):    #define everything we need for training    NUM_EPOCHS = 1    criterion = nn.CrossEntropyLoss(ignore_index=-1)  # Ignore class index -1    optimizer = optim.Adam(model.parameters(), lr=0.0001, weight_decay=1e-4)        lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5, verbose=True)    since = time.time()    val_acc_history = []    best_model_wts = copy.deepcopy(model.state_dict())    best_acc = 0.0    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")    model.to(device)    for epoch in tqdm(range(NUM_EPOCHS)):        print(f'EPOCH{epoch}/{NUM_EPOCHS-1}')        print('-' * 10)        model.train()           for phase in ['train', 'val']: # Each epoch has a training and validation phase            if phase == 'train':                model.train()  # Set model to training mode            else:                model.eval()   # Set model to evaluate mode            running_loss = 0.0            running_corrects = 0            for inputs, labels in tqdm(dataloaders[phase]): # Iterate over data                labels = labels.to(device)                optimizer.zero_grad() # Zero the parameter gradients                with torch.set_grad_enabled(phase == 'train'): # Forward. Track history if only in train                                        #outputs,x = model(inputs)                    outputs, x = model(inputs)[:2]                    loss = criterion(outputs, labels)                    _, preds = torch.max(outputs, 1)                    if phase == 'train': # Backward + optimize only if in training phase                        loss.backward()                        optimizer.step()                # Statistics                running_loss += loss.item() * inputs.size(0)                running_corrects += torch.sum(preds == labels.data)            epoch_loss = running_loss / len(dataloaders[phase].dataset)                        if phase == 'val': # Adjust learning rate based on val loss                lr_scheduler.step(epoch_loss)                            epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)            print("the Result \n")                    print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))                        # deep copy the model            if phase == 'val' and epoch_acc > best_acc:                best_acc = epoch_acc                best_model_wts = copy.deepcopy(model.state_dict())            if phase == 'val':                val_acc_history.append(epoch_acc)        print()    time_elapsed = time.time() - since    print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))    print('Best val Acc: {:4f}'.format(best_acc))    # load best model weights    model.load_state_dict(best_model_wts)    return model, val_acc_history

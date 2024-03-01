@@ -1,0 +1,14 @@
+Label distribution of 'gender':
+male: 1158
+female: 152
+Label distribution of 'ethnicity':
+white: 1098
+black: 99
+other: 61
+asian: 52
+remaining numeric columns (1310, 1)
+the label shape is: torch.Size([1310, 2])
+Namespace(dataset_path='..dataset/', epochs=5, batch_size=64, lr=0.001)
+Loading dataset from ..dataset/
+  0%|          | 0/1311 [00:00<?, ?it/s]  0%|          | 2/1311 [00:00<01:55, 11.35it/s]  0%|          | 4/1311 [00:00<01:26, 15.13it/s]  0%|          | 6/1311 [00:00<01:23, 15.60it/s]  1%|          | 8/1311 [00:00<01:18, 16.66it/s]  1%|          | 13/1311 [00:00<00:57, 22.74it/s]  1%|          | 16/1311 [00:00<01:12, 17.80it/s]  1%|▏         | 18/1311 [00:01<01:21, 15.79it/s]  2%|▏         | 21/1311 [00:01<01:09, 18.69it/s]  2%|▏         | 24/1311 [00:01<01:24, 15.20it/s]  2%|▏         | 26/1311 [00:01<01:56, 11.07it/s]  2%|▏         | 28/1311 [00:02<02:53,  7.37it/s]  2%|▏         | 31/1311 [00:02<02:22,  8.98it/s]  3%|▎         | 33/1311 [00:02<02:37,  8.11it/s]  3%|▎         | 35/1311 [00:03<02:31,  8.43it/s]  3%|▎         | 35/1311 [00:20<02:31,  8.43it/s]/opt/homebrew/Cellar/python@3.11/3.11.4_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/multiprocessing/resource_tracker.py:224: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
